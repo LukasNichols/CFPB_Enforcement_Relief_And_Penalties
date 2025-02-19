@@ -1,0 +1,453 @@
+>>>markdown
+## This is the data for CFPB dispostions or known as the 'Consumer Financial Protection Bureau'
+>>>markdown
+By Lukas E. Nichols
+>>>malloy
+Source: ConsumerProtection is duckdb.table("./Disp.csv") extend{
+
+}
+>>>markdown
+## How many cases were handled by Federal Courts or Administrative Courts?
+>>>malloy
+run: ConsumerProtection -> {
+group_by: `Admin or Federal Court`
+--aggregate: count(`Admin or Federal Court`)
+}
+>>>markdown
+## Where are all the cases happening?
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: `Court Name`
+  aggregate: 
+    case_count is count(),
+    avg_order_amount is avg(`Total Ordered Amount`)
+  order_by: case_count desc
+  limit: 10
+}
+>>>markdown
+## Financial analysis of courts, plus suspension rate.
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: `Court Name`
+  aggregate: 
+    `Civil Money Penalties` is sum(`Total Ordered: Civil Money Penalties`),
+    `Consumer Redress` is sum(`Total Ordered: Consumer Redress`),
+    `Total Disgorgement` is sum(`Total Ordered: Disgorgement`),
+    `Total Other` is sum(`Total Ordered: Other Consumer Relief`),
+    `Suspension Rate` is sum(`Total Suspended Amount`) / sum(`Total Ordered Amount`) * 100
+}
+>>>markdown
+## What courts have the highest suspension rate?
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: `Court Name`
+  aggregate:
+    avg_suspension_rate is avg(
+      case 
+        when `Total Ordered Amount` > 0 
+        then `Total Suspended Amount` / `Total Ordered Amount` * 100
+        else 0
+      end
+    ),
+    total_cases is count()
+  having: total_cases > 5  
+  order_by: avg_suspension_rate desc
+}
+>>>markdown
+## Court cases by month then year. 
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: 
+    `Month` is `Date Final Order Entered by Court`.month,
+    `Year` is `Date Final Order Entered by Court`.year
+  aggregate:
+    `Total Ordered` is sum(`Total Ordered Amount`),
+    `Case Count` is count()
+}
+>>>markdown
+## Who are the repeat offenders?
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: `Case Caption`
+  aggregate: 
+    `Case Count` is count(),
+    `Total Ordered` is sum(`Total Ordered Amount`),
+    `Total Suspended` is sum(`Total Suspended Amount`)
+  having: `Case Count` > 1
+  order_by: `Case Count` desc
+}
+>>>markdown
+## What were the largest fines?
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: 
+    Defendant is `Case Caption`,
+    Court is `Court Name`,
+    Docket is `Docket Number`
+  aggregate: 
+    `Total Fine` is sum(`Total Ordered Amount`),
+  order_by: `Total Fine` desc
+  limit: 10
+}
+>>>markdown
+## Which court had the most money ordered?
+>>>malloy
+run: ConsumerProtection -> {
+  aggregate:
+    `Total Ordered` is sum(`Total Ordered Amount`),
+    group_by: `Court type` is `Admin or Federal Court`
+    order_by: `Total Ordered` desc
+}
+>>>markdown
+## Case Count by Year
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: `Year` is `Date Final Order Entered by Court`.year
+  aggregate: 
+    --`avg_processing_time` is avg(`Date Final Order Entered by Court`),
+    `Case Count` is count()
+  order_by: `Year` desc
+}
+>>>markdown
+## Total ORdered by Month Plus Year
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: 
+    `Month` is `Date Final Order Entered by Court`.month
+    `Year` is `Date Final Order Entered by Court`.year
+  aggregate: 
+    `Case Count` is count(),
+    `Total Ordered` is sum(`Total Ordered Amount`)
+  order_by: `Year` desc, `Month`
+}
+>>>markdown
+## Final Date Ordered by Year
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: 
+    `Year` is `Date Final Order Entered by Court`.year
+  aggregate: 
+    `Case Count` is count()
+  order_by: `Year` desc
+}
+>>>markdown
+## Top 5 Peak Years (Case Count and Amount Ordered)
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: `Year` is `Date Final Order Entered by Court`.year
+  aggregate: 
+    `Case Count` is count(),
+    `Total Ordered` is sum(`Total Ordered Amount`)
+  order_by: `Case Count` desc
+  limit: 5
+}
+>>>markdown
+## high Value Cases
+>>>malloy
+run: ConsumerProtection -> {
+  having: `Total Ordered Amount` > 1000000
+  group_by: 
+    `Case Caption`,
+    `Court Name`
+  aggregate: total_amount is sum(`Total Ordered Amount`)
+  order_by: total_amount desc
+}
+>>>markdown
+## Geographic Locations 
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: `Court Name`
+  aggregate: 
+    `Case Count` is count(),
+    `Total Ordered` is sum(`Total Ordered Amount`)
+  order_by: `Case Count` desc
+}
+>>>markdown
+## Highest Penalty by Court
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: `Court Name`
+  aggregate:
+    --`Avg Penalty` is avg(`Total Ordered Amount`),
+    --`median_penalty` is median(`Total Ordered Amount`),
+    `Max Penalty` is max(`Total Ordered Amount`)
+  order_by: `Max Penalty` desc
+}
+>>>markdown
+## Penalty Type by Jurisdiction
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: `Court Name`
+  aggregate:
+    `Civil Penalty Frequency` is count(case when `Total Ordered: Civil Money Penalties` > 0 then 1 end),
+    `Redress Frequency` is count(case when `Total Ordered: Consumer Redress` > 0 then 1 end),
+    `Disgorgement Frequency` is count(case when `Total Ordered: Disgorgement` > 0 then 1 end)
+}
+>>>markdown
+## 17 Average Penalty by Court
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: `Court Name`
+  aggregate:
+    `Avg Penalty` is avg(`Total Ordered Amount`),
+    --`median_penalty` is median(`Total Ordered Amount`),
+    --`Max Penalty` is max(`Total Ordered Amount`)
+  order_by: `Avg Penalty` desc
+}
+>>>markdown
+## Suspension Rate by Court (Desc)
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: `Court Name`
+  aggregate:
+    `Suspension Rate` is sum(`Total Suspended Amount`) / sum(`Total Ordered Amount`) * 100,
+    `Case Count` is count()
+  having: `Case Count` > 5
+  order_by: `Suspension Rate` desc
+}
+>>>markdown
+## The Most Amount of Cases Per Year and What Court
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: 
+    `Court` is `Court Name`,
+    `Year` is `Date Final Order Entered by Court`.year
+  aggregate: 
+    `Case Count` is count(),
+    `Total Amount` is sum(`Total Ordered Amount`)
+    order_by: `Case Count` desc
+}
+>>>markdown
+## Cases Per Defendant Plus Total Amount Ordered
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: `Case Caption`
+  aggregate:
+    `Case Count` is count(),
+    `Total Ordered` is sum(`Total Ordered Amount`)
+  order_by: `Case Count` desc
+}
+>>>markdown
+## Top 20 Defendants
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: `Case Caption`
+  aggregate:
+    `Total Ordered` is sum(`Total Ordered Amount`),
+    `Case Count` is count()
+  order_by: `Total Ordered` desc
+  limit: 20
+}
+>>>markdown
+## Penalty Structure by Year
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: `Year` is `Date Final Order Entered by Court`.year
+  aggregate:
+    `Civil Penalty Percentage` is sum(`Total Ordered: Civil Money Penalties`) / sum(`Total Ordered Amount`) * 100,
+    `Redress Percentage` is sum(`Total Ordered: Consumer Redress`) / sum(`Total Ordered Amount`) * 100,
+    `Disgorgement Percentage` is sum(`Total Ordered: Disgorgement`) / sum(`Total Ordered Amount`) * 100
+  order_by: `Year` desc
+}
+>>>markdown
+## Average Suspension Rate by Year
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: `Year` is `Date Final Order Entered by Court`.year
+  aggregate:
+    `Avg Suspension Rate` is avg(
+      case when `Total Ordered Amount` > 0 
+      then div(`Total Suspended Amount`, `Total Ordered Amount`) * 100
+      else 0 end
+    )
+  order_by: `Year` desc
+}
+>>>markdown
+## Suspension Rate by Court Type
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: `Admin or Federal Court`
+  aggregate:
+    `Suspension Rate` is sum(`Total Suspended Amount`) / sum(`Total Ordered Amount`) * 100,
+    `Case Count` is count()
+}
+>>>markdown
+## Average Penalty Amount by Year (Bar Chart)
+>>>malloy
+# bar_chart
+run: ConsumerProtection -> {
+      group_by: `Year` is `Date Final Order Entered by Court`.year
+  aggregate:
+    `Avg Penalty` is avg(`Total Ordered Amount`),
+    --median_penalty is median!(`Total Ordered Amount`),
+    total_ordered is sum(`Total Ordered Amount`),
+    case_count is count()
+  order_by: `Year`
+}
+>>>markdown
+## Average Total Amount Ordered by Year (Line Chart)
+>>>malloy
+# line_chart
+run: ConsumerProtection -> {
+  group_by: `Year` is `Date Final Order Entered by Court`.year
+  aggregate: 
+    `Total Impact` is sum(`Total Ordered Amount`),
+    `Average Penalty` is avg(`Total Ordered Amount`)
+  order_by: `Year` desc
+}
+>>>markdown
+## Penalty Amount by Quarter
+>>>malloy
+--# line_chart
+run: ConsumerProtection -> {
+      group_by: `Quarter` is `Date Final Order Entered by Court`.quarter
+  aggregate: 
+    `Penalty Amount` is sum(`Total Ordered Amount`)
+  order_by: `Quarter` desc
+}
+>>>markdown
+## Average Penalty by Court (Including Case Count)
+>>>malloy
+
+run: ConsumerProtection -> {
+      group_by: `Court Name`
+  aggregate: 
+    `Case Count` is count(),
+    `Avg Penalty` is avg(`Total Ordered Amount`)
+  order_by: `Case Count` desc
+}
+
+>>>markdown
+## Case Count by Year and Month
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: 
+    `Month` is `Date Final Order Entered by Court`.month,
+    `Year` is `Date Final Order Entered by Court`.year
+  aggregate: `Case Count` is count()
+  order_by: `Year`, `Month`
+}
+>>>markdown
+## Case Count by Year (Bar Chart)
+>>>malloy
+# bar_chart
+run: ConsumerProtection -> {
+      group_by: 
+    `Year` is `Date Final Order Entered by Court`.year
+  aggregate: `Case Count` is count()
+  order_by: `Year`, 
+}
+>>>markdown
+## High Value Cases (Defendant vs. Court)
+>>>malloy
+
+run: ConsumerProtection -> {
+  having: `Total Ordered Amount` > 1000000
+  group_by: 
+    `Defendant` is `Case Caption`,
+    `Court` is `Court Name`,
+    `Order Date` is `Date Final Order Entered by Court`
+  aggregate: 
+    `Total Penalty` is sum(`Total Ordered Amount`)
+  order_by: `Total Penalty` desc
+}
+>>>markdown
+## Average Ordered Amount by Quarter (Bar Chart)
+>>>malloy
+# bar_chart
+run: ConsumerProtection -> {
+  group_by: `Quarter` is `Date Final Order Entered by Court`.Quarter
+  aggregate: 
+    `Avg Penalty` is avg(`Total Ordered Amount`),
+    `Case Count` is count()
+  order_by: `Quarter`
+}
+>>>markdown
+## Repeat Offenders
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: `Case Caption`
+  aggregate:
+    `Case Count` is count(),
+    `Total Penalties` is sum(`Total Ordered Amount`),
+    `Avg Suspension Rate` is avg(div(`Total Suspended Amount`, `Total Ordered Amount`)) * 100
+  having: `Case Count` > 1
+  order_by: `Case Count` desc
+}
+>>>markdown
+## Total Ordered, Total Suspended, and Case Count by Year
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: 
+    `Year` is `Date Final Order Entered by Court`.year,
+    --`Month` is `Date Final Order Entered by Court`.month
+  aggregate:
+    `Total Ordered` is sum(`Total Ordered Amount`),
+    `Total Suspended` is sum(`Total Suspended Amount`),
+    `Case Count` is count()
+  order_by: `Year` desc , --`Month`
+}
+>>>markdown
+## Case Volume by Court and Amount Ordered
+>>>malloy
+run: ConsumerProtection -> {
+
+  group_by: `Court Name`
+  aggregate: 
+    `Case Count` is count(),
+    `Total Ordered` is sum(`Total Ordered Amount`)
+  order_by: `Case Count` desc
+}
+>>>markdown
+## Case Count by Month and Total Penalties
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: 
+    `Month` is `Date Final Order Entered by Court`.month
+  aggregate: 
+    `Case Count` is count(),
+    `Total Penalties` is sum(`Total Ordered Amount`)
+  order_by: `Month`
+}
+>>>markdown
+## All Totals and Type Ordered 
+>>>malloy
+run: ConsumerProtection -> {
+      aggregate:
+    `Total CMP` is sum(`Total Ordered: Civil Money Penalties`),
+    `Total Redress` is sum(`Total Ordered: Consumer Redress`),
+    `Total Disgorgement` is sum(`Total Ordered: Disgorgement`)
+}
+>>>markdown
+## Case Count by Year, Quarter, and Amount Awarded
+>>>malloy
+run: ConsumerProtection -> {
+  group_by: 
+    `Year` is `Date Final Order Entered by Court`.year,
+    `Quarter` is `Date Final Order Entered by Court`.quarter
+  aggregate:
+    `Case Count` is count(),
+    `Total Ordered` is sum(`Total Ordered Amount`)
+  order_by: `Year`, `Quarter`
+}
+>>>markdown
+## Amount of Small Cases (<100000), Medium Cases (<1000000) and Large Cases (The rest)
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: size_category is case
+    when `Total Ordered Amount` < 100000 then 'Small'
+    when `Total Ordered Amount` < 1000000 then 'Medium'
+    else 'Large'
+  end
+  aggregate: case_count is count()
+}
+>>>markdown
+## What Courts Order What Type of Penalties?
+>>>malloy
+run: ConsumerProtection -> {
+      group_by: `Court Name`
+  aggregate:
+    `CMP Total` is sum(`Total Ordered: Civil Money Penalties`),
+    `Redress Total` is sum(`Total Ordered: Consumer Redress`),
+    `Disgorgement Total` is sum(`Total Ordered: Disgorgement`)
+}

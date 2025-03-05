@@ -5,7 +5,7 @@ I chose to explore CFPB Enforcement Relief & Penalties because of my strong inte
 
 ## Summary of Findings
 1st picture - The amount ordered per year.
-![Project](https://imgur.com/8CADOKi) 
+<img width="190" alt="Image" src="https://github.com/user-attachments/assets/37dca677-51b8-4600-9978-11c6f09feaff" />
 1st picture - The number of cases per year.
 ![Project2](https://imgur.com/PCAh6uq)
 1st picture - The amount of money each court type fined. 

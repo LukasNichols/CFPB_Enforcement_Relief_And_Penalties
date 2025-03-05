@@ -11,7 +11,7 @@ I chose to explore CFPB Enforcement Relief & Penalties because of my strong inte
 1st picture - The amount of money each court type fined. 
 <img width="190" alt="Image" src="https://github.com/user-attachments/assets/bed95f03-44d0-471e-844c-e6810627c87e" />
 1st picture - Which specific court fined financial institutions the most.
-![Project4](https://imgur.com/QkdYcEV)
+<img width="214" alt="Image" src="https://github.com/user-attachments/assets/5d74cc59-ffb4-4364-8705-64e01f4541a2" />
 
 ## FOIA Records
 

@@ -3,14 +3,19 @@
 ## Motivation
 I chose to explore CFPB Enforcement Relief & Penalties because of my strong interest in financial regulation and its impact on businesses and consumers. Understanding how enforcement actions shape corporate behavior, consumer protection, and market stability is crucial in today’s financial landscape. By analyzing the patterns of penalties and relief measures, I aim to gain deeper insights into regulatory effectiveness and its broader economic implications.
 
-## Summary of Findings
-1st picture - The amount ordered per year.
+## Summary of Findings 
+## Most Interesting Things I Learned 
+### 1st picture - The amount ordered per year.
+**This is interesting to me because  because you can see what years banks were becoming more risky, and willing to take a financial hit.**
 <img width="190" alt="Image" src="https://github.com/user-attachments/assets/37dca677-51b8-4600-9978-11c6f09feaff" />
-1st picture - The number of cases per year.
+### 2nd picture - The number of cases per year.
+**This is interesting to me because  because you can see what years banks were becoming more risky, and willing to take a financial hit.**
 <img width="90" alt="Image" src="https://github.com/user-attachments/assets/422d1cfb-c3bd-4114-bc1b-798ffa5cfa6f" />
-1st picture - The amount of money each court type fined. 
+### 3rd picture - The amount of money each court type fined. 
+**This finding is interesting to me because I would've assumed that the Federal Court system would be fining the financial institutions more then the Administrative office.**
 <img width="190" alt="Image" src="https://github.com/user-attachments/assets/bed95f03-44d0-471e-844c-e6810627c87e" />
-1st picture - Which specific court fined financial institutions the most.
+### 4th picture - Which specific court fined financial institutions the most.
+**This is interesting to me because I would've assumed Florida would not have been one of the highest fining states towards financial institutions because they seem to be very 'pro industry'.**
 <img width="214" alt="Image" src="https://github.com/user-attachments/assets/5d74cc59-ffb4-4364-8705-64e01f4541a2" />
 
 ## FOIA Records
